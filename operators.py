@@ -1,11 +1,10 @@
 # pretty straightforward, no need to comment here.
 
-# TODO: make negate operator available
-# def negate(truth_value):
-#     if truth_value == "T":
-#         return "F"
-#     else:
-#         return "T"
+def negate(truth_value):
+    if truth_value == "T":
+        return "F"
+    else:
+        return "T"
 
 
 def AND(p_truth_value, q_truth_value):
