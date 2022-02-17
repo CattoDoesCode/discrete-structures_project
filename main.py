@@ -1,6 +1,6 @@
 from operators import AND, OR, XOR, IMPLIES, IFF
 
-# using this package for printing pReTtYy table
+# using this package for printing pReTtYy truth table
 from prettytable import PrettyTable
 
 print("\nTruth Table Generator v1.1")
@@ -42,7 +42,7 @@ def read_input(proposition):
     # variables = 3
     rows = pow(2, len(variables))
     # render_table(generate_truth_values())
-    render_table_ver2()
+    render_table_ver3(generate_truth_values_ver2())
 
 
 def operator_truth_value(p_truth_value, q_truth_value):
@@ -119,41 +119,49 @@ def generate_truth_values_ver2():
 #                                               operator_truth_value(truth_val[x], truth_val[rows + x])))
 
 
-def render_table_ver2():
-    # only works for 2 propositional variables and no values for column 3
+# def render_table_ver2():
+#     # only works for 2 propositional variables and no values for column 3
+#
+#     print("\nTruth Table: ")
+#
+#     # printing the header (variables, operators)
+#     print('|', end='')
+#     for x in range(len(variables)):
+#         print(" {} |".format(variables[x]), end='')
+#
+#     if operator == "-":
+#         print(" -{} |".format(variables[0]))
+#         print("----------")
+#     else:
+#         print(" {} {} {} |".format(variables[0], operator, variables[1]))
+#         print("_________________")
+#
+#     # [ ['T', 'T', 'F', 'F'] ['T', 'F', 'T', 'F'] ]
+#     # T T T F F T F F
+#     # rearrange truth value of variables
+#     t_values = generate_truth_values_ver2()
+#     new_truth_values = []
+#     for sublist in range(1):
+#         for value in range(rows):
+#             new_truth_values.append(t_values[sublist][value])
+#             new_truth_values.append(t_values[sublist + 1][value])
+#
+#     # print(new_truth_values)
+#
+#     iter_t_val = iter(new_truth_values)
+#     for x in range(rows):
+#         print('\n|', end='')
+#         for y in range(len(variables)):
+#             item = next(iter_t_val)
+#             print("", item, "|", end='')
 
-    print("\nTruth Table: ")
 
-    # printing the header (variables, operators)
-    print('|', end='')
+def render_table_ver3(truth_values):
+    print("\nTruth Table:")
     for x in range(len(variables)):
-        print(" {} |".format(variables[x]), end='')
+        truth_table.add_column(variables[x], truth_values[x])
 
-    if operator == "-":
-        print(" -{} |".format(variables[0]))
-        print("----------")
-    else:
-        print(" {} {} {} |".format(variables[0], operator, variables[1]))
-        print("_________________")
-
-    # [ ['T', 'T', 'F', 'F'] ['T', 'F', 'T', 'F'] ]
-    # T T T F F T F F
-    # rearrange truth value of variables
-    t_values = generate_truth_values_ver2()
-    new_truth_values = []
-    for sublist in range(1):
-        for value in range(rows):
-            new_truth_values.append(t_values[sublist][value])
-            new_truth_values.append(t_values[sublist + 1][value])
-
-    # print(new_truth_values)
-
-    iter_t_val = iter(new_truth_values)
-    for x in range(rows):
-        print('\n|', end='')
-        for y in range(len(variables)):
-            item = next(iter_t_val)
-            print("", item, "|", end='')
+    print(truth_table)
 
 
 # driver code
