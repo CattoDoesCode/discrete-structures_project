@@ -40,3 +40,12 @@ def IFF(p_truth_value, q_truth_value):
         return "T"
     else:
         return "F"
+
+
+def op_and(p, q):
+    truth_values = []
+    for truth_val in range(len(p)):
+        t_v = AND(p[truth_val], q[truth_val])
+        truth_values.append(t_v)
+
+    return truth_values
