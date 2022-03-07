@@ -17,19 +17,16 @@ print("\ncopy paste operators: NOT = '-', AND = '∧', OR = '∨', XOR = '⊕', 
 
 
 # user_proposition = input("\nenter proposition: ")
-# user_proposition = "(p ∧ (q ∧ r)) ∧ s"
+user_proposition = "(p ∧ (q ∨ r)) ∧ s"
+# user_proposition = "(q ∨ r) ∧ (s → q)"
 # user_proposition = "-p ∧ q"
-# user_proposition = "p ∨ (q ∧ r)"
-user_proposition = "p ∨ ((p ∧ (q ∨ r)) ∨ (s → t))"
-# user_proposition = "(p ∧ (q ∨ r)) ∨ (s → t)"
+# user_proposition = "p ∨ ((p ∧ (q ∨ r)) ∨ (s → t))"
 print("\nproposition: ", user_proposition)
 # TODO: if input has '()' at the end beginning, remove.
 
 # global variables
 variables = []
 rows = 0
-
-nested_propositions_truth_values = {}
 
 # read user input
 for char in user_proposition:
@@ -56,7 +53,6 @@ def parenthetic_contents(string):
 
 nested_propositions = list(parenthetic_contents(user_proposition))
 nested_propositions.append(user_proposition)
-# print("nested props:", nested_propositions)
 
 rows = pow(2, len(variables))
 
@@ -91,16 +87,19 @@ def generate_truth_values():
 
 
 def calculate_operations():
-    global nested_propositions_truth_values
+
+    # holds the truth values of nested propositions
+    # with its corresponding proposition
+    nested_propositions_truth_values = {}
 
     variables_truth_values = generate_truth_values()
 
     temp_propositional_variables = []
-    temp_operator = ""
+    temp_operator = " "
 
     # TODO: refactor this part, some code redundancy present
     for proposition in nested_propositions:
-        solved_proposition = ""
+        solved_proposition = " "
 
         # check if proposition already has truth values
         is_solved_proposition = False
@@ -112,16 +111,18 @@ def calculate_operations():
                 break
 
         if is_solved_proposition:
-            new_proposition = re.sub(proposition, "", proposition)
+
+            # remove the solved proposition from the current proposition
+            new_proposition = re.sub(solved_proposition, " ", proposition)
+            # print("new p:", new_proposition)
+
             for x in new_proposition:
                 if x.isalpha():
                     temp_propositional_variables.append(x)
                 elif x in ["-", "∧", "∨", "⊕", "→", "⟷"]:
                     temp_operator = x
-                elif x == "(" or x == ")":
-                    continue
 
-            # append to global nested propositional variables
+            # append to nested propositional variables dictionary
             if temp_operator == "∧":
                 nested_propositions_truth_values[proposition] = op_and(
                     variables_truth_values[temp_propositional_variables[0]],
@@ -145,19 +146,17 @@ def calculate_operations():
 
             # reset values
             temp_propositional_variables.clear()
-            temp_operator = ""
+            temp_operator = " "
+
         else:
             for x in proposition:
                 if x.isalpha():
                     temp_propositional_variables.append(x)
                 elif x in ["-", "∧", "∨", "⊕", "→", "⟷"]:
                     temp_operator = x
-                elif x == "(" or x == ")":
-                    continue
 
+            # append to nested propositional variables dictionary
             if temp_operator == "∧":
-                # append to global nested propositional variables
-                # nested_propositions_truth_values.update({proposition: result})
                 nested_propositions_truth_values[proposition] = op_and(
                     variables_truth_values[temp_propositional_variables[0]],
                     variables_truth_values[temp_propositional_variables[1]])
@@ -180,7 +179,9 @@ def calculate_operations():
 
             # reset values
             temp_propositional_variables.clear()
-            temp_operator = ""
+            temp_operator = " "
+
+    return nested_propositions_truth_values
 
 
 def render_table():
@@ -191,13 +192,12 @@ def render_table():
     print("\nTruth Table:")
 
     # adding the propositional variables' column to the table
-    truth_values_dict = generate_truth_values()
-    for x in truth_values_dict:
-        truth_table.add_column(x, truth_values_dict[x])
+    variables_truth_values = generate_truth_values()
+    for x in variables_truth_values:
+        truth_table.add_column(x, variables_truth_values[x])
 
     # adding the operation column to the table
-    # Todo: make multiple operators available
-
+    nested_propositions_truth_values = calculate_operations()
     for z in nested_propositions_truth_values:
         truth_table.add_column(z, nested_propositions_truth_values[z])
 
