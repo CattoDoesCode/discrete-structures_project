@@ -17,10 +17,12 @@ print("\ncopy paste operators: NOT = '-', AND = '∧', OR = '∨', XOR = '⊕', 
 
 
 # user_proposition = input("\nenter proposition: ")
-user_proposition = "(p ∧ (q ∨ r)) ∧ s"
-# user_proposition = "(q ∨ r) ∧ (s → q)"
+# user_proposition = "(p ∧ (q ∨ r)) ∧ s"
+# user_proposition = "(p ∧ (q ∧ r)) ∧ s"
+user_proposition = "(p ∧ (q ∧ r)) ∧ (s ∧ t)"
+# user_proposition = "(q ∨ r) ∧ (s → q)" - won't work if same variable present
 # user_proposition = "-p ∧ q"
-# user_proposition = "p ∨ ((p ∧ (q ∨ r)) ∨ (s → t))"
+# user_proposition = "p ∨ ((p ∧ (q ∨ r)) ∨ (s → t))"/
 print("\nproposition: ", user_proposition)
 # TODO: if input has '()' at the end beginning, remove.
 
@@ -87,6 +89,18 @@ def generate_truth_values():
 
 
 def calculate_operations():
+    def generate_truth_values_operations(op, op_p, op_q):
+        # append to nested propositional variables dictionary
+        if op == "∧":
+            nested_propositions_truth_values[proposition] = op_and(op_p, op_q)
+        elif op == "∨":
+            nested_propositions_truth_values[proposition] = op_or(op_p, op_q)
+        elif op == "⊕":
+            nested_propositions_truth_values[proposition] = op_xor(op_p, op_q)
+        elif op == "→":
+            nested_propositions_truth_values[proposition] = op_implies(op_p, op_q)
+        elif op == "⟷":
+            nested_propositions_truth_values[proposition] = op_iff(op_p, op_q)
 
     # holds the truth values of nested propositions
     # with its corresponding proposition
@@ -94,92 +108,70 @@ def calculate_operations():
 
     variables_truth_values = generate_truth_values()
 
-    temp_propositional_variables = []
-    temp_operator = " "
-
-    # TODO: refactor this part, some code redundancy present
     for proposition in nested_propositions:
-        solved_proposition = " "
+        print("solved propositions:", nested_propositions_truth_values.keys())
+        print("current proposition:", proposition)
+        temp_propositional_variables = []
+        temp_operator = ""
+
+        temp_solved_propositions = []
+        new_proposition = ""
+
+        # analyze current proposition
+        # case 1: p ^ q - unsolved proposition
+        # case 2: (p ^ q) ^ r - with solved proposition and one variable
+        # case 3: ((p ^ q) ^ r) ^ (p ^ q) - two solved proposition
+
+        # check current proposition
+        # either case 1, case 2, or case 3
 
         # check if proposition already has truth values
         is_solved_proposition = False
-        for p in nested_propositions_truth_values.keys():
+        for p in reversed(nested_propositions_truth_values.keys()):
+            print("iterating through solved propositions:", p)
             there_is = re.search(p, proposition)
             if there_is:
-                solved_proposition = p
+                print("solved props detected...", p)
+                temp_solved_propositions.append(p)
                 is_solved_proposition = True
-                break
 
-        if is_solved_proposition:
+                # remove the solved proposition from the current proposition
+                new_proposition = re.sub(temp_solved_propositions[0], " ", proposition)
+                print("new proposition:", new_proposition)
 
-            # remove the solved proposition from the current proposition
-            new_proposition = re.sub(solved_proposition, " ", proposition)
-            # print("new p:", new_proposition)
-
-            for x in new_proposition:
-                if x.isalpha():
-                    temp_propositional_variables.append(x)
-                elif x in ["-", "∧", "∨", "⊕", "→", "⟷"]:
-                    temp_operator = x
-
-            # append to nested propositional variables dictionary
-            if temp_operator == "∧":
-                nested_propositions_truth_values[proposition] = op_and(
-                    variables_truth_values[temp_propositional_variables[0]],
-                    nested_propositions_truth_values[solved_proposition])
-            elif temp_operator == "∨":
-                nested_propositions_truth_values[proposition] = op_or(
-                    variables_truth_values[temp_propositional_variables[0]],
-                    nested_propositions_truth_values[solved_proposition])
-            elif temp_operator == "⊕":
-                nested_propositions_truth_values[proposition] = op_xor(
-                    variables_truth_values[temp_propositional_variables[0]],
-                    nested_propositions_truth_values[solved_proposition])
-            elif temp_operator == "→":
-                nested_propositions_truth_values[proposition] = op_implies(
-                    variables_truth_values[temp_propositional_variables[0]],
-                    nested_propositions_truth_values[solved_proposition])
-            elif temp_operator == "⟷":
-                nested_propositions_truth_values[proposition] = op_iff(
-                    variables_truth_values[temp_propositional_variables[0]],
-                    nested_propositions_truth_values[solved_proposition])
-
-            # reset values
-            temp_propositional_variables.clear()
-            temp_operator = " "
-
-        else:
+        # case 1
+        if not is_solved_proposition:
             for x in proposition:
                 if x.isalpha():
                     temp_propositional_variables.append(x)
                 elif x in ["-", "∧", "∨", "⊕", "→", "⟷"]:
                     temp_operator = x
 
-            # append to nested propositional variables dictionary
-            if temp_operator == "∧":
-                nested_propositions_truth_values[proposition] = op_and(
-                    variables_truth_values[temp_propositional_variables[0]],
-                    variables_truth_values[temp_propositional_variables[1]])
-            elif temp_operator == "∨":
-                nested_propositions_truth_values[proposition] = op_or(
-                    variables_truth_values[temp_propositional_variables[0]],
-                    variables_truth_values[temp_propositional_variables[1]])
-            elif temp_operator == "⊕":
-                nested_propositions_truth_values[proposition] = op_xor(
-                    variables_truth_values[temp_propositional_variables[0]],
-                    variables_truth_values[temp_propositional_variables[1]])
-            elif temp_operator == "→":
-                nested_propositions_truth_values[proposition] = op_implies(
-                    variables_truth_values[temp_propositional_variables[0]],
-                    variables_truth_values[temp_propositional_variables[1]])
-            elif temp_operator == "⟷":
-                nested_propositions_truth_values[proposition] = op_iff(
-                    variables_truth_values[temp_propositional_variables[0]],
-                    variables_truth_values[temp_propositional_variables[1]])
+            generate_truth_values_operations(temp_operator, variables_truth_values[temp_propositional_variables[0]],
+                                             variables_truth_values[temp_propositional_variables[1]])
 
-            # reset values
-            temp_propositional_variables.clear()
-            temp_operator = " "
+        else:
+            # case 2
+            if len(temp_solved_propositions) == 1:
+
+                for x in new_proposition:
+                    if x.isalpha():
+                        temp_propositional_variables.append(x)
+                    elif x in ["-", "∧", "∨", "⊕", "→", "⟷"]:
+                        temp_operator = x
+
+                generate_truth_values_operations(temp_operator, variables_truth_values[temp_propositional_variables[0]],
+                                                 nested_propositions_truth_values[temp_solved_propositions[0]])
+            # case 3
+            elif len(temp_solved_propositions) == 2:
+                print("case 3 detected...")
+                for x in new_proposition:
+                    if x in ["-", "∧", "∨", "⊕", "→", "⟷"]:
+                        temp_operator = x
+
+                generate_truth_values_operations(temp_operator,
+                                                 nested_propositions_truth_values[temp_solved_propositions[0]],
+                                                 nested_propositions_truth_values[temp_solved_propositions[1]])
 
     return nested_propositions_truth_values
 
