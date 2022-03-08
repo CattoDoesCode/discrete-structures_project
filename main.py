@@ -14,12 +14,13 @@ print("\ncopy paste operators: NOT = '-', AND = '∧', OR = '∨', XOR = '⊕', 
 
 # limitations:
 # no input error catcher
+# negate operator not supported
 
 
 # user_proposition = input("\nenter proposition: ")
-# user_proposition = "(p ∧ (q ∨ r)) ∧ s"
-# user_proposition = "(p ∧ (q ∧ r)) ∧ s"
-user_proposition = "(p ∧ (q ∧ r)) ∧ (s ∧ t)"
+# user_proposition = "(p ∧ (q ∧ r)) ∧ s" - solved
+user_proposition = "((p ∧ q) ∧ r) ∧ (s ∧ t)"
+# user_proposition = "(q ∧ r) ∧ (s ∧ t)" - solved
 # user_proposition = "(q ∨ r) ∧ (s → q)" - won't work if same variable present
 # user_proposition = "-p ∧ q"
 # user_proposition = "p ∨ ((p ∧ (q ∨ r)) ∨ (s → t))"/
@@ -55,6 +56,7 @@ def parenthetic_contents(string):
 
 nested_propositions = list(parenthetic_contents(user_proposition))
 nested_propositions.append(user_proposition)
+print("nested props to solve:", nested_propositions)
 
 rows = pow(2, len(variables))
 
@@ -115,6 +117,7 @@ def calculate_operations():
         temp_operator = ""
 
         temp_solved_propositions = []
+
         new_proposition = ""
 
         # analyze current proposition
@@ -129,15 +132,24 @@ def calculate_operations():
         is_solved_proposition = False
         for p in reversed(nested_propositions_truth_values.keys()):
             print("iterating through solved propositions:", p)
-            there_is = re.search(p, proposition)
+
+            temp_prop_1 = re.sub(r"\(", " ", proposition)
+            temp_prop_2 = re.sub(r"\)", " ", temp_prop_1)
+
+            temp_p_1 = re.sub(r"\(", " ", p)
+            temp_p_2 = re.sub(r"\)", " ", temp_p_1)
+
+            there_is = re.search(temp_p_2, temp_prop_2)
             if there_is:
                 print("solved props detected...", p)
                 temp_solved_propositions.append(p)
                 is_solved_proposition = True
 
                 # remove the solved proposition from the current proposition
-                new_proposition = re.sub(temp_solved_propositions[0], " ", proposition)
+                new_proposition = re.sub(temp_p_2, " ", temp_prop_2)
                 print("new proposition:", new_proposition)
+
+                # break
 
         # case 1
         if not is_solved_proposition:
