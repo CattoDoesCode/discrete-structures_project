@@ -6,80 +6,71 @@ from prettytable import PrettyTable
 
 from operators import op_and, op_or, op_xor, op_implies, op_iff, op_negate
 
-print("\nTruth Table Generator v1.1")
+print("\nTruth Table Generator")
+print("+=========================================================================================+")
 print("version 1.5")
 print("\t- compound proposition supported (beta)")
+print("\t- won't work with duplicate nested proposition e.g. (q ∧ r) ∧ (q ∧ r)")
 
+print("\nnote: \n\t- wrap negated variables with parenthesis e.g. (-p) ∧ q")
+print("\t- remove outer parenthesis e.g. do: (-p) ∧ q | don't: ((-p) ∧ q)")
 print("\ncopy paste operators: NOT = '-', AND = '∧', OR = '∨', XOR = '⊕', IMPLIES = '→', IFF = '⟷'")
+print("sample input: p ∨ ((p ∧ (q ∨ r)) ∨ (s → (-t)))")
+print("+=========================================================================================+")
 
 # limitations:
 # no input error catcher
-# negate operator not supported
-
-
-# user_proposition = input("\nenter proposition: ")
-# user_proposition = "(p ∧ (q ∧ r)) ∧ s" - solved | compound proposition
-# user_proposition = "(q ∧ r) ∧ (s ∧ t)" - solved | compound proposition | case 3
-# user_proposition = "(q ∨ r) ∧ (s → q)" - solved | same variable present
-# user_proposition = "((p ∧ q) ∧ r) ∧ (s ∧ t)" - solved | compound prop 4 operations
-# user_proposition = "(p ∨ ((p ∧ (q ∨ r)) ∨ (s → t))) ∨ u" - solved | compound prop 6 operations
-# user_proposition = "(q ∧ r) ∧ (q ∧ r)" - won't work if same proposition present
-# user_proposition = "(q ∧ r) ∧ (q ∧ r)"
-# user_proposition = "-p ∧ q"
-user_proposition = "(-p ∧ q) ∨ (-r)"
-# user_proposition = "-p ∧ q" - won't work with negate
-# user_proposition = "p ∨ ((p ∧ (q ∨ r)) ∨ (s → t))"
-print("\nproposition: ", user_proposition)
-# TODO: if input has '()' at the end beginning, remove.
 
 # global variables
 variables = []
 rows = 0
-
-# read user input
-for char in user_proposition:
-    if char.isspace():
-        continue
-    elif char.isalpha():
-        variables.append(char)
-    # else:
-    #     # Todo: input error catcher
-    #     print("invalid operator/input!")
-
-# remove duplicate variables
-variables = list(dict.fromkeys(variables))
+nested_propositions = []
 
 
-def parenthetic_contents(string):
-    # https://stackoverflow.com/a/4285211/16027681
-    """Generate parenthesized contents in string as pairs (level, contents)."""
-    stack = []
-    for i, c in enumerate(string):
-        if c == '(':
-            stack.append(i)
-        elif c == ')' and stack:
-            start = stack.pop()
-            yield string[start + 1: i]
+def read_input():
+    global variables, rows, nested_propositions
+    user_proposition = input("\nenter proposition: ")
+    print("\nproposition: ", user_proposition)
 
+    # read user input
+    for char in user_proposition:
+        if char.isspace():
+            continue
+        elif char.isalpha():
+            variables.append(char)
+        # else:
+        #     # Todo: input error catcher
+        #     print("invalid operator/input!")
 
-nested_propositions = list(parenthetic_contents(user_proposition))
-nested_propositions.append(user_proposition)
-print("nestp", nested_propositions)
+    # remove duplicate variables
+    variables = list(dict.fromkeys(variables))
 
-# detect if there's negate
-for q in range(len(nested_propositions)):
-    print(q)
-    iter_prop = iter(nested_propositions[q])
-    for w in nested_propositions[q]:
-        print(w)
-        if w == "-":
-            print("next:", next(iter_prop))
-            nested_propositions.insert(0, "-{}".format(next(iter_prop)))
+    def parenthetic_contents(string):
+        # https://stackoverflow.com/a/4285211/16027681
+        """Generate parenthesized contents in string as pairs (level, contents)."""
+        stack = []
+        for i, c in enumerate(string):
+            if c == '(':
+                stack.append(i)
+            elif c == ')' and stack:
+                start = stack.pop()
+                yield string[start + 1: i]
 
+    nested_propositions = list(parenthetic_contents(user_proposition))
+    nested_propositions.append(user_proposition)
 
-print("nested props to solve:", nested_propositions)
+    # detect if there's negate
+    for q in range(len(nested_propositions)):
+        iter_prop = iter(nested_propositions[q])
+        for w in nested_propositions[q]:
+            if w == "-":
+                next(iter_prop)
+                nested_propositions.insert(0, "-{}".format(next(iter_prop)))
 
-rows = pow(2, len(variables))
+    # remove duplicate propositions
+    nested_propositions = list(dict.fromkeys(nested_propositions))
+
+    rows = pow(2, len(variables))
 
 
 def generate_truth_values():
@@ -134,8 +125,6 @@ def calculate_operations():
     variables_truth_values = generate_truth_values()
 
     for proposition in nested_propositions:
-        print("solved propositions:", nested_propositions_truth_values.keys())
-        print("current proposition:", proposition)
 
         temp_propositional_variables = []
         temp_operator = []
@@ -147,7 +136,6 @@ def calculate_operations():
         # case 1: p ^ q - unsolved propositions
         # case 2: (p ^ q) ^ r - with solved proposition and one variable
         # case 3: ((p ^ q) ^ r) ^ (p ^ q) - two solved proposition
-        #   case 3.1: (p ^ q) ^ (p ^ q) - two (solved) same proposition
 
         # check current proposition
         # either case 1, case 2, or case 3
@@ -156,7 +144,6 @@ def calculate_operations():
         is_solved_proposition = False
         temp_new_proposition = []
         for p in reversed(nested_propositions_truth_values.keys()):
-            print("iterating through solved propositions:", p)
 
             temp_prop_1 = re.sub(r"\(", " ", proposition)
             temp_prop_2 = re.sub(r"\)", " ", temp_prop_1)
@@ -166,7 +153,6 @@ def calculate_operations():
 
             there_is = re.search(temp_p_2, temp_prop_2)
             if there_is:
-                print("solved props detected...", p)
                 if temp_prop_2 != temp_p_2:
                     temp_solved_propositions.append(p)
                     is_solved_proposition = True
@@ -175,11 +161,9 @@ def calculate_operations():
                         # remove the solved proposition from the current proposition
                         new_proposition = re.sub(temp_p_2, " ", temp_prop_2)
                         temp_new_proposition.append(new_proposition)
-                        print("new proposition1:", new_proposition)
                     else:
                         # remove the solved proposition from the current proposition
                         new_proposition = re.sub(temp_p_2, " ", temp_new_proposition[-1])
-                        print("new proposition2:", new_proposition)
                         break
 
         # case 1
@@ -201,7 +185,6 @@ def calculate_operations():
         else:
             # case 2
             if len(temp_solved_propositions) == 1:
-                print("case 2 detected...")
 
                 for x in new_proposition:
                     if x.isalpha():
@@ -214,13 +197,9 @@ def calculate_operations():
 
             # case 3
             elif len(temp_solved_propositions) == 2:
-                print("case 3 detected...")
-                print("case 3 prop:", new_proposition)
                 for x in new_proposition:
                     if x in ["-", "∧", "∨", "⊕", "→", "⟷"]:
                         temp_operator.append(x)
-                print(temp_solved_propositions[0])
-                print(temp_solved_propositions[1])
                 generate_truth_values_nested(temp_operator[0],
                                              nested_propositions_truth_values[temp_solved_propositions[0]],
                                              nested_propositions_truth_values[temp_solved_propositions[1]])
@@ -249,5 +228,12 @@ def render_table():
 
 
 # driver code
-calculate_operations()
-render_table()
+while True:
+    read_input()
+    calculate_operations()
+    render_table()
+
+    replay = input("\ninput new proposition? y/n: ")
+    if replay == "n":
+        break
+
