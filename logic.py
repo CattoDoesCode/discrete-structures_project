@@ -187,8 +187,13 @@ def calculate_operations():
                     elif x in ["-", "∧", "∨", "⊕", "→", "⟷"]:
                         temp_operator = x
 
-                generate_truth_values_nested(temp_operator, variables_truth_values[temp_propositional_variables[0]],
-                                             nested_propositions_truth_values[temp_solved_propositions[0]])
+                if len(temp_propositional_variables) != 0:
+                    generate_truth_values_nested(temp_operator, variables_truth_values[temp_propositional_variables[0]],
+                                                 nested_propositions_truth_values[temp_solved_propositions[0]])
+                else:
+                    generate_truth_values_nested(temp_operator,
+                                                 nested_propositions_truth_values[temp_solved_propositions[0]],
+                                                 nested_propositions_truth_values[temp_solved_propositions[0]])
 
             # case 3
             elif len(temp_solved_propositions) == 2:
