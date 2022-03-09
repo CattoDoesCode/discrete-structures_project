@@ -133,6 +133,7 @@ def calculate_operations():
         # check if proposition already has truth values
         is_solved_proposition = False
         temp_new_proposition = []
+        there_is_solved = True
         for p in reversed(nested_propositions_truth_values.keys()):
 
             temp_prop_1 = re.sub(r"\(", " ", proposition)
@@ -142,7 +143,7 @@ def calculate_operations():
             temp_p_2 = re.sub(r"\)", " ", temp_p_1)
 
             there_is = re.search(temp_p_2, temp_prop_2)
-            if there_is:
+            if there_is and there_is_solved:
                 if temp_prop_2 != temp_p_2:
                     temp_solved_propositions.append(p)
                     is_solved_proposition = True
@@ -155,6 +156,10 @@ def calculate_operations():
                         # remove the solved proposition from the current proposition
                         new_proposition = re.sub(temp_p_2, " ", temp_new_proposition[-1])
                         break
+
+                    # check new proposition
+                    for c in nested_propositions_truth_values.keys():
+                        there_is_solved = re.search(c, new_proposition)
 
         # case 1
         if not is_solved_proposition:
