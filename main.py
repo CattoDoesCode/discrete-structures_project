@@ -4,7 +4,7 @@ import re
 # using this package for printing pReTtYy truth table
 from prettytable import PrettyTable
 
-from operators import op_and, op_or, op_xor, op_implies, op_iff
+from operators import op_and, op_or, op_xor, op_implies, op_iff, op_negate
 
 print("\nTruth Table Generator v1.1")
 print("version 1.5")
@@ -18,12 +18,15 @@ print("\ncopy paste operators: NOT = '-', AND = '∧', OR = '∨', XOR = '⊕', 
 
 
 # user_proposition = input("\nenter proposition: ")
-# user_proposition = "(p ∧ (q ∧ r)) ∧ s" - solved
-# user_proposition = "(q ∧ r) ∧ (s ∧ t)" - solved
+# user_proposition = "(p ∧ (q ∧ r)) ∧ s" - solved | compound proposition
+# user_proposition = "(q ∧ r) ∧ (s ∧ t)" - solved | compound proposition | case 3
 # user_proposition = "(q ∨ r) ∧ (s → q)" - solved | same variable present
-user_proposition = "((p ∧ q) ∧ r) ∧ (s ∧ t)"
+# user_proposition = "((p ∧ q) ∧ r) ∧ (s ∧ t)" - solved | compound prop 4 operations
+# user_proposition = "(p ∨ ((p ∧ (q ∨ r)) ∨ (s → t))) ∨ u" - solved | compound prop 6 operations
 # user_proposition = "(q ∧ r) ∧ (q ∧ r)" - won't work if same proposition present
 # user_proposition = "(q ∧ r) ∧ (q ∧ r)"
+# user_proposition = "-p ∧ q"
+user_proposition = "(-p ∧ q) ∨ (-r)"
 # user_proposition = "-p ∧ q" - won't work with negate
 # user_proposition = "p ∨ ((p ∧ (q ∨ r)) ∨ (s → t))"
 print("\nproposition: ", user_proposition)
@@ -61,6 +64,19 @@ def parenthetic_contents(string):
 
 nested_propositions = list(parenthetic_contents(user_proposition))
 nested_propositions.append(user_proposition)
+print("nestp", nested_propositions)
+
+# detect if there's negate
+for q in range(len(nested_propositions)):
+    print(q)
+    iter_prop = iter(nested_propositions[q])
+    for w in nested_propositions[q]:
+        print(w)
+        if w == "-":
+            print("next:", next(iter_prop))
+            nested_propositions.insert(0, "-{}".format(next(iter_prop)))
+
+
 print("nested props to solve:", nested_propositions)
 
 rows = pow(2, len(variables))
@@ -112,6 +128,8 @@ def calculate_operations():
             nested_propositions_truth_values[proposition] = op_implies(op_p, op_q)
         elif op == "⟷":
             nested_propositions_truth_values[proposition] = op_iff(op_p, op_q)
+        elif op == "-":
+            nested_propositions_truth_values[proposition] = op_negate(op_p)
 
     variables_truth_values = generate_truth_values()
 
@@ -172,8 +190,13 @@ def calculate_operations():
                 elif x in ["-", "∧", "∨", "⊕", "→", "⟷"]:
                     temp_operator = x
 
-            generate_truth_values_nested(temp_operator, variables_truth_values[temp_propositional_variables[0]],
-                                         variables_truth_values[temp_propositional_variables[1]])
+            if temp_operator == "-":
+                generate_truth_values_nested(temp_operator, variables_truth_values[temp_propositional_variables[0]],
+                                             variables_truth_values[temp_propositional_variables[0]])
+            else:
+
+                generate_truth_values_nested(temp_operator, variables_truth_values[temp_propositional_variables[0]],
+                                             variables_truth_values[temp_propositional_variables[1]])
 
         else:
             # case 2
@@ -228,4 +251,3 @@ def render_table():
 # driver code
 calculate_operations()
 render_table()
-
