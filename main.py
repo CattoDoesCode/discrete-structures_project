@@ -19,11 +19,13 @@ print("\ncopy paste operators: NOT = '-', AND = '∧', OR = '∨', XOR = '⊕', 
 
 # user_proposition = input("\nenter proposition: ")
 # user_proposition = "(p ∧ (q ∧ r)) ∧ s" - solved
-user_proposition = "((p ∧ q) ∧ r) ∧ (s ∧ t)"
 # user_proposition = "(q ∧ r) ∧ (s ∧ t)" - solved
-# user_proposition = "(q ∨ r) ∧ (s → q)" - won't work if same variable present
-# user_proposition = "-p ∧ q"
-# user_proposition = "p ∨ ((p ∧ (q ∨ r)) ∨ (s → t))"/
+# user_proposition = "(q ∨ r) ∧ (s → q)" - solved | same variable present
+user_proposition = "((p ∧ q) ∧ r) ∧ (s ∧ t)"
+# user_proposition = "(q ∧ r) ∧ (q ∧ r)" - won't work if same proposition present
+# user_proposition = "(q ∧ r) ∧ (q ∧ r)"
+# user_proposition = "-p ∧ q" - won't work with negate
+# user_proposition = "p ∨ ((p ∧ (q ∨ r)) ∨ (s → t))"
 print("\nproposition: ", user_proposition)
 # TODO: if input has '()' at the end beginning, remove.
 
@@ -40,6 +42,9 @@ for char in user_proposition:
     # else:
     #     # Todo: input error catcher
     #     print("invalid operator/input!")
+
+# remove duplicate variables
+variables = list(dict.fromkeys(variables))
 
 
 def parenthetic_contents(string):
@@ -91,7 +96,11 @@ def generate_truth_values():
 
 
 def calculate_operations():
-    def generate_truth_values_operations(op, op_p, op_q):
+    # holds the truth values of nested propositions
+    # with its corresponding proposition
+    nested_propositions_truth_values = {}
+
+    def generate_truth_values_nested(op, op_p, op_q):
         # append to nested propositional variables dictionary
         if op == "∧":
             nested_propositions_truth_values[proposition] = op_and(op_p, op_q)
@@ -104,32 +113,30 @@ def calculate_operations():
         elif op == "⟷":
             nested_propositions_truth_values[proposition] = op_iff(op_p, op_q)
 
-    # holds the truth values of nested propositions
-    # with its corresponding proposition
-    nested_propositions_truth_values = {}
-
     variables_truth_values = generate_truth_values()
 
     for proposition in nested_propositions:
         print("solved propositions:", nested_propositions_truth_values.keys())
         print("current proposition:", proposition)
+
         temp_propositional_variables = []
-        temp_operator = ""
+        temp_operator = []
 
         temp_solved_propositions = []
-
         new_proposition = ""
 
         # analyze current proposition
-        # case 1: p ^ q - unsolved proposition
+        # case 1: p ^ q - unsolved propositions
         # case 2: (p ^ q) ^ r - with solved proposition and one variable
         # case 3: ((p ^ q) ^ r) ^ (p ^ q) - two solved proposition
+        #   case 3.1: (p ^ q) ^ (p ^ q) - two (solved) same proposition
 
         # check current proposition
         # either case 1, case 2, or case 3
 
         # check if proposition already has truth values
         is_solved_proposition = False
+        temp_new_proposition = []
         for p in reversed(nested_propositions_truth_values.keys()):
             print("iterating through solved propositions:", p)
 
@@ -142,14 +149,20 @@ def calculate_operations():
             there_is = re.search(temp_p_2, temp_prop_2)
             if there_is:
                 print("solved props detected...", p)
-                temp_solved_propositions.append(p)
-                is_solved_proposition = True
+                if temp_prop_2 != temp_p_2:
+                    temp_solved_propositions.append(p)
+                    is_solved_proposition = True
 
-                # remove the solved proposition from the current proposition
-                new_proposition = re.sub(temp_p_2, " ", temp_prop_2)
-                print("new proposition:", new_proposition)
-
-                # break
+                    if len(temp_new_proposition) == 0:
+                        # remove the solved proposition from the current proposition
+                        new_proposition = re.sub(temp_p_2, " ", temp_prop_2)
+                        temp_new_proposition.append(new_proposition)
+                        print("new proposition1:", new_proposition)
+                    else:
+                        # remove the solved proposition from the current proposition
+                        new_proposition = re.sub(temp_p_2, " ", temp_new_proposition[-1])
+                        print("new proposition2:", new_proposition)
+                        break
 
         # case 1
         if not is_solved_proposition:
@@ -159,12 +172,13 @@ def calculate_operations():
                 elif x in ["-", "∧", "∨", "⊕", "→", "⟷"]:
                     temp_operator = x
 
-            generate_truth_values_operations(temp_operator, variables_truth_values[temp_propositional_variables[0]],
-                                             variables_truth_values[temp_propositional_variables[1]])
+            generate_truth_values_nested(temp_operator, variables_truth_values[temp_propositional_variables[0]],
+                                         variables_truth_values[temp_propositional_variables[1]])
 
         else:
             # case 2
             if len(temp_solved_propositions) == 1:
+                print("case 2 detected...")
 
                 for x in new_proposition:
                     if x.isalpha():
@@ -172,18 +186,21 @@ def calculate_operations():
                     elif x in ["-", "∧", "∨", "⊕", "→", "⟷"]:
                         temp_operator = x
 
-                generate_truth_values_operations(temp_operator, variables_truth_values[temp_propositional_variables[0]],
-                                                 nested_propositions_truth_values[temp_solved_propositions[0]])
+                generate_truth_values_nested(temp_operator, variables_truth_values[temp_propositional_variables[0]],
+                                             nested_propositions_truth_values[temp_solved_propositions[0]])
+
             # case 3
             elif len(temp_solved_propositions) == 2:
                 print("case 3 detected...")
+                print("case 3 prop:", new_proposition)
                 for x in new_proposition:
                     if x in ["-", "∧", "∨", "⊕", "→", "⟷"]:
-                        temp_operator = x
-
-                generate_truth_values_operations(temp_operator,
-                                                 nested_propositions_truth_values[temp_solved_propositions[0]],
-                                                 nested_propositions_truth_values[temp_solved_propositions[1]])
+                        temp_operator.append(x)
+                print(temp_solved_propositions[0])
+                print(temp_solved_propositions[1])
+                generate_truth_values_nested(temp_operator[0],
+                                             nested_propositions_truth_values[temp_solved_propositions[0]],
+                                             nested_propositions_truth_values[temp_solved_propositions[1]])
 
     return nested_propositions_truth_values
 
@@ -211,3 +228,4 @@ def render_table():
 # driver code
 calculate_operations()
 render_table()
+
