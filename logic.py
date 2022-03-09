@@ -13,10 +13,12 @@ from operators import op_and, op_or, op_xor, op_implies, op_iff, op_negate
 variables = []
 rows = 0
 nested_propositions = []
+user_proposition = ""
 
 
 def read_input():
-    global variables, rows, nested_propositions
+    global variables, rows, nested_propositions, user_proposition
+
     user_proposition = input("\nenter proposition: ")
     print("\nproposition: ", user_proposition)
 
@@ -193,6 +195,24 @@ def calculate_operations():
                                              nested_propositions_truth_values[temp_solved_propositions[1]])
 
     return nested_propositions_truth_values
+
+
+def check_validity():
+    is_invalid_proposition = False
+
+    proposition_truth_values = calculate_operations()
+
+    input_proposition_truth_values = proposition_truth_values[user_proposition]
+
+    for x in input_proposition_truth_values:
+        if x == "F":
+            is_invalid_proposition = True
+            break
+
+    if is_invalid_proposition:
+        print("\nproposition is INVALID")
+    else:
+        print("\nproposition is VALID")
 
 
 def render_table():

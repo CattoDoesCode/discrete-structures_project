@@ -1,4 +1,4 @@
-from logic import read_input, calculate_operations, render_table
+from logic import read_input, calculate_operations, render_table, check_validity
 
 print("\nTruth Table Generator")
 print("+=========================================================================================+")
@@ -16,6 +16,7 @@ print("+========================================================================
 while True:
     read_input()
     calculate_operations()
+    check_validity()
     render_table()
 
     replay = input("\ninput new proposition? y/n: ")
