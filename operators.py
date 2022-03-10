@@ -1,51 +1,53 @@
-# pretty straightforward, no need to comment here.
+# logical connectives
 
-def negate(truth_value):
+def _negate(truth_value):
     if truth_value == "T":
         return "F"
     else:
         return "T"
 
 
-def AND(p, q):
+def _and(p, q):
     if p == "T" and q == "T":
         return "T"
     else:
         return "F"
 
 
-def OR(p, q):
+def _or(p, q):
     if p == "F" and q == "F":
         return "F"
     else:
         return "T"
 
 
-def XOR(p, q):
+def _xor(p, q):
     if (p == "T" and q == "T") or (p == "F" and q == "F"):
         return "F"
     else:
         return "T"
 
 
-def IMPLIES(p, q):
+def _implies(p, q):
     if p == "T" and q == "F":
         return "F"
     else:
         return "T"
 
 
-def IFF(p, q):
+def _iff(p, q):
     if (p == "T" and q == "T") or (p == "F" and q == "F"):
         return "T"
     else:
         return "F"
 
 
+# operators to generate truth values
+
 def op_negate(p):
     truth_values = []
     for x in range(len(p)):
-        t_v = negate(p[x])
+        t_v = _negate(p[x])
         truth_values.append(t_v)
 
     return truth_values
@@ -54,7 +56,7 @@ def op_negate(p):
 def op_and(p, q):
     truth_values = []
     for x in range(len(p)):
-        t_v = AND(p[x], q[x])
+        t_v = _and(p[x], q[x])
         truth_values.append(t_v)
 
     return truth_values
@@ -63,7 +65,7 @@ def op_and(p, q):
 def op_or(p, q):
     truth_values = []
     for x in range(len(p)):
-        t_v = OR(p[x], q[x])
+        t_v = _or(p[x], q[x])
         truth_values.append(t_v)
 
     return truth_values
@@ -72,7 +74,7 @@ def op_or(p, q):
 def op_xor(p, q):
     truth_values = []
     for x in range(len(p)):
-        t_v = XOR(p[x], q[x])
+        t_v = _xor(p[x], q[x])
         truth_values.append(t_v)
 
     return truth_values
@@ -81,7 +83,7 @@ def op_xor(p, q):
 def op_implies(p, q):
     truth_values = []
     for x in range(len(p)):
-        t_v = IMPLIES(p[x], q[x])
+        t_v = _implies(p[x], q[x])
         truth_values.append(t_v)
 
     return truth_values
@@ -90,7 +92,7 @@ def op_implies(p, q):
 def op_iff(p, q):
     truth_values = []
     for x in range(len(p)):
-        t_v = IFF(p[x], q[x])
+        t_v = _iff(p[x], q[x])
         truth_values.append(t_v)
 
     return truth_values

@@ -6,18 +6,21 @@ from prettytable import PrettyTable
 
 from operators import op_and, op_or, op_xor, op_implies, op_iff, op_negate
 
-# limitations:
-# no input error catcher
-
 # global variables
 variables = []
 rows = 0
-nested_propositions = []
 user_proposition = ""
-temp_connectives = []
+operators = []
+nested_propositions = []
 
 
-def read_input():
+def user_input():
+    """
+    Asks for the user input proposition,
+    checks if input has unbalanced parenthesis or invalid operator,
+    splits nested propositions from the input proposition.
+    """
+
     global variables, rows, nested_propositions, user_proposition
 
     is_valid_input = False
@@ -32,7 +35,7 @@ def read_input():
         rows = 0
         nested_propositions.clear()
         user_proposition = ""
-        temp_connectives.clear()
+        operators.clear()
 
         # ask user for input proposition
         user_proposition = input("\nenter proposition: ")
@@ -45,36 +48,31 @@ def read_input():
             elif char.isalpha():
                 variables.append(char)
             else:
-                temp_connectives.append(char)
-            # else:
-            #     # Todo: input error catcher
-            #     print("invalid operator/input!")
+                operators.append(char)
 
         # input error catcher -  unbalanced parenthesis
         user_proposition_copy = user_proposition
-        paren_prop = re.sub("[a-zA-Z]", "", user_proposition_copy)
-        paren_prop = re.sub("[-∧∨⊕→⟷]", "", paren_prop)
-        paren_prop = re.sub(r"\s", "", paren_prop)
-        open_paren = re.findall(r"\(", paren_prop)
-        close_paren = re.findall(r"\)", paren_prop)
+        open_paren = re.findall(r"\(", user_proposition_copy)
+        close_paren = re.findall(r"\)", user_proposition_copy)
 
         if len(open_paren) != len(close_paren):
             print("unbalanced parenthesis, re-enter proposition.")
             continue
 
-        # input error catcher - invalid connectives
-        valid_connectives = 0
-        for con in temp_connectives:
+        # input error catcher - invalid operator
+        valid_operators = 0
+        for con in operators:
             if con not in ["-", "∧", "∨", "⊕", "→", "⟷"]:
                 print("invalid connective: '{}\',".format(con), "re-enter proposition")
                 invalid_operator = True
                 continue
             else:
-                valid_connectives += 1
+                valid_operators += 1
 
-        if len(temp_connectives) == valid_connectives:
+        if len(operators) == valid_operators:
             invalid_operator = False
 
+        # TODO: input error catcher - invalid proposition (excess variable and proposition), and incomplete proposition.
         if invalid_operator:
             is_valid_input = False
         else:
@@ -98,7 +96,7 @@ def read_input():
     nested_propositions = list(parenthetic_contents(user_proposition))
     nested_propositions.append(user_proposition)
 
-    # detect if there's negate
+    # check if there's negated variable
     for q in range(len(nested_propositions)):
         iter_prop = iter(nested_propositions[q])
         for w in nested_propositions[q]:
@@ -113,15 +111,15 @@ def read_input():
 
 
 def generate_truth_values():
-    # generates the truth values of propositional variables stored in a dictionary
-    # works for n number of propositional variables
+    """ Generates and returns the truth values of propositional variables.
+    Works for n number of propositional variables. """
+
+    # holds the truth values of all propositional variables (value)
+    # with its corresponding propositional variables (key)
+    variables_truth_values = {}
 
     # temporarily holds the truth values of all propositional variables
     temp_truth_values = []
-
-    # holds the truth values of all propositional variables
-    # with its corresponding propositional variables
-    truth_values = {}
 
     # temp variable
     rows_copy = rows
@@ -136,14 +134,17 @@ def generate_truth_values():
 
     # distribute truth values to respective propositional variables
     for x in range(len(variables)):
-        truth_values[variables[x]] = temp_truth_values[x]
+        variables_truth_values[variables[x]] = temp_truth_values[x]
 
-    return truth_values
+    return variables_truth_values
 
 
-def calculate_operations():
-    # holds the truth values of nested propositions
-    # with its corresponding proposition
+def calculate_nested_propositions():
+    """ Generates and returns truth values for nested propositions and input proposition.
+    Works for n number of nested propositions. """
+
+    # holds the truth values of nested propositions (value)
+    # with its corresponding proposition (key)
     nested_propositions_truth_values = {}
 
     def generate_truth_values_nested(op, op_p, op_q):
@@ -179,10 +180,10 @@ def calculate_operations():
         # check current proposition
         # either case 1, case 2, or case 3
 
-        # check if proposition already has truth values
+        # check if proposition has solved propositions inside.
         is_solved_proposition = False
+        there_is_still_solved = True
         temp_new_proposition = []
-        there_is_solved = True
         for p in reversed(nested_propositions_truth_values.keys()):
 
             temp_prop_1 = re.sub(r"\(", " ", proposition)
@@ -191,24 +192,24 @@ def calculate_operations():
             temp_p_1 = re.sub(r"\(", " ", p)
             temp_p_2 = re.sub(r"\)", " ", temp_p_1)
 
-            there_is = re.search(temp_p_2, temp_prop_2)
-            if there_is and there_is_solved:
+            there_is_solved = re.search(temp_p_2, temp_prop_2)
+
+            if there_is_solved and there_is_still_solved:
                 if temp_prop_2 != temp_p_2:
                     temp_solved_propositions.append(p)
                     is_solved_proposition = True
 
+                    # remove the solved proposition from the current proposition
                     if len(temp_new_proposition) == 0:
-                        # remove the solved proposition from the current proposition
                         new_proposition = re.sub(temp_p_2, " ", temp_prop_2)
                         temp_new_proposition.append(new_proposition)
                     else:
-                        # remove the solved proposition from the current proposition
                         new_proposition = re.sub(temp_p_2, " ", temp_new_proposition[-1])
                         break
 
                     # check new proposition
                     for c in nested_propositions_truth_values.keys():
-                        there_is_solved = re.search(c, new_proposition)
+                        there_is_still_solved = re.search(c, new_proposition)
 
         # case 1
         if not is_solved_proposition:
@@ -222,7 +223,6 @@ def calculate_operations():
                 generate_truth_values_nested(temp_operator, variables_truth_values[temp_propositional_variables[0]],
                                              variables_truth_values[temp_propositional_variables[0]])
             else:
-
                 generate_truth_values_nested(temp_operator, variables_truth_values[temp_propositional_variables[0]],
                                              variables_truth_values[temp_propositional_variables[1]])
 
@@ -257,14 +257,16 @@ def calculate_operations():
 
 
 def check_validity():
+    """ Evaluates input proposition if it is Valid or Invalid Proposition. """
+
     is_invalid_proposition = False
 
-    proposition_truth_values = calculate_operations()
+    proposition_truth_values = calculate_nested_propositions()
 
     input_proposition_truth_values = proposition_truth_values[user_proposition]
 
-    for x in input_proposition_truth_values:
-        if x == "F":
+    for truth_value in input_proposition_truth_values:
+        if truth_value == "F":
             is_invalid_proposition = True
             break
 
@@ -275,8 +277,9 @@ def check_validity():
 
 
 def render_table():
-    # initiate pretty table object
-    # for printing the truth table
+    """ Prints the truth table from variables and nested_propositions truth values using the PrettyTable package. """
+
+    # initiate PrettyTable object
     truth_table = PrettyTable()
 
     print("\nTruth Table:")
@@ -287,8 +290,22 @@ def render_table():
         truth_table.add_column(x, variables_truth_values[x])
 
     # adding the operation column to the table
-    nested_propositions_truth_values = calculate_operations()
+    nested_propositions_truth_values = calculate_nested_propositions()
     for z in nested_propositions_truth_values:
         truth_table.add_column(z, nested_propositions_truth_values[z])
 
     print(truth_table)
+
+
+def print_menu():
+    print("\nTruth Table Generator")
+    print("+=======================================================================================+")
+    print("version 2.0")
+    print("\t- compound proposition supported")
+    print("\t- works for n number of variables and propositions")
+
+    print("\nnote: \n\t- wrap negated variables with parenthesis e.g. (-p) ∧ q")
+    print("\t- remove outer parenthesis e.g. do: (-p) ∧ q | don't: ((-p) ∧ q)")
+    print("\ncopy paste operators: NOT = '-', AND = '∧', OR = '∨', XOR = '⊕', IMPLIES = '→', IFF = '⟷'")
+    print("sample input: p ∨ ((p ∧ (q ∨ r)) ∨ (s → (-t)))")
+    print("+=======================================================================================+")
