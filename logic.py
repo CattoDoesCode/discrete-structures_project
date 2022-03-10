@@ -11,31 +11,44 @@ from operators import op_and, op_or, op_xor, op_implies, op_iff, op_negate
 
 # global variables
 variables = []
-connectives = []
 rows = 0
 nested_propositions = []
 user_proposition = ""
+temp_connectives = []
 
 
 def read_input():
-    global variables, rows, nested_propositions, user_proposition, connectives
+    global variables, rows, nested_propositions, user_proposition
 
-    is_valid_input = True
-    while is_valid_input:
+    is_valid_input = False
+    invalid_operator = False
+
+    while not is_valid_input:
+
+        # variables and lists needs to be reset
+        # since user could input new proposition without terminating the program
+        # where values of variables and lists are still present
+        variables.clear()
+        rows = 0
+        nested_propositions.clear()
+        user_proposition = ""
+        temp_connectives.clear()
+
+        # ask user for input proposition
         user_proposition = input("\nenter proposition: ")
         print("\nproposition: ", user_proposition)
 
         # read user input
         for char in user_proposition:
-            if char.isspace():
+            if char.isspace() or char == "(" or char == char == ")":
                 continue
             elif char.isalpha():
                 variables.append(char)
-            elif char in ["-", "∧", "∨", "⊕", "→", "⟷"]:
-                connectives.append(char)
+            else:
+                temp_connectives.append(char)
             # else:
             #     # Todo: input error catcher
-                #     print("invalid operator/input!")
+            #     print("invalid operator/input!")
 
         # input error catcher -  unbalanced parenthesis
         user_proposition_copy = user_proposition
@@ -48,8 +61,24 @@ def read_input():
         if len(open_paren) != len(close_paren):
             print("unbalanced parenthesis, re-enter proposition.")
             continue
-        else:
+
+        # input error catcher - invalid connectives
+        valid_connectives = 0
+        for con in temp_connectives:
+            if con not in ["-", "∧", "∨", "⊕", "→", "⟷"]:
+                print("invalid connective: '{}\',".format(con), "re-enter proposition")
+                invalid_operator = True
+                continue
+            else:
+                valid_connectives += 1
+
+        if len(temp_connectives) == valid_connectives:
+            invalid_operator = False
+
+        if invalid_operator:
             is_valid_input = False
+        else:
+            is_valid_input = True
 
     # remove duplicate variables
     variables = list(dict.fromkeys(variables))
