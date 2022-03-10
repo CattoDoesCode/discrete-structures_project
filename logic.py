@@ -11,30 +11,50 @@ from operators import op_and, op_or, op_xor, op_implies, op_iff, op_negate
 
 # global variables
 variables = []
+connectives = []
 rows = 0
 nested_propositions = []
 user_proposition = ""
 
 
 def read_input():
-    global variables, rows, nested_propositions, user_proposition
+    global variables, rows, nested_propositions, user_proposition, connectives
 
-    user_proposition = input("\nenter proposition: ")
-    print("\nproposition: ", user_proposition)
+    is_valid_input = True
+    while is_valid_input:
+        user_proposition = input("\nenter proposition: ")
+        print("\nproposition: ", user_proposition)
 
-    # read user input
-    for char in user_proposition:
-        if char.isspace():
+        # read user input
+        for char in user_proposition:
+            if char.isspace():
+                continue
+            elif char.isalpha():
+                variables.append(char)
+            elif char in ["-", "∧", "∨", "⊕", "→", "⟷"]:
+                connectives.append(char)
+            # else:
+            #     # Todo: input error catcher
+                #     print("invalid operator/input!")
+
+        # input error catcher -  unbalanced parenthesis
+        user_proposition_copy = user_proposition
+        paren_prop = re.sub("[a-zA-Z]", "", user_proposition_copy)
+        paren_prop = re.sub("[-∧∨⊕→⟷]", "", paren_prop)
+        paren_prop = re.sub(r"\s", "", paren_prop)
+        open_paren = re.findall(r"\(", paren_prop)
+        close_paren = re.findall(r"\)", paren_prop)
+
+        if len(open_paren) != len(close_paren):
+            print("unbalanced parenthesis, re-enter proposition.")
             continue
-        elif char.isalpha():
-            variables.append(char)
-        # else:
-        #     # Todo: input error catcher
-        #     print("invalid operator/input!")
+        else:
+            is_valid_input = False
 
     # remove duplicate variables
     variables = list(dict.fromkeys(variables))
 
+    # dissect input proposition
     def parenthetic_contents(string):
         # https://stackoverflow.com/a/4285211/16027681
         """Generate parenthesized contents in string as pairs (level, contents)."""
