@@ -7,10 +7,10 @@ from prettytable import PrettyTable
 from operators import op_and, op_or, op_xor, op_implies, op_iff, op_negate
 
 # global variables
-variables = []
-rows = 0
 user_proposition = ""
+variables = []
 operators = []
+rows = 0
 nested_propositions = []
 
 
