@@ -43,7 +43,7 @@ def user_input():
 
         # read user input
         for char in user_proposition:
-            if char.isspace() or char == "(" or char == char == ")":
+            if char.isspace() or char == "(" or char == ")":
                 continue
             elif char.isalpha():
                 variables.append(char)
@@ -95,14 +95,6 @@ def user_input():
 
     nested_propositions = list(parenthetic_contents(user_proposition))
     nested_propositions.append(user_proposition)
-
-    # check if there's negated variable
-    for q in range(len(nested_propositions)):
-        iter_prop = iter(nested_propositions[q])
-        for w in nested_propositions[q]:
-            if w == "-":
-                next(iter_prop)
-                nested_propositions.insert(0, "-{}".format(next(iter_prop)))
 
     # remove duplicate propositions
     nested_propositions = list(dict.fromkeys(nested_propositions))
