@@ -71,7 +71,7 @@ def user_input():
         if len(operators) == valid_operators:
             invalid_operator = False
 
-        # TODO: input error catcher - invalid proposition (excess variable and proposition), and incomplete proposition.
+        # TODO: input error catcher - invalid proposition (excess variable and operator), and incomplete proposition.
         if invalid_operator:
             is_valid_input = False
         else:
@@ -115,6 +115,9 @@ def generate_truth_values():
     # temp variable
     rows_copy = rows
 
+    # variables = [q, r]
+    # temp_truth_Values = [[T, T, F, F], [T, F, T, F]]
+    # Variables_truth_Values = {q: [T, T, F, F], r: [T, F, T, F]}
     for v in range(len(variables)):
         temp_truth_values.append([])
         while len(temp_truth_values[v]) < rows:
@@ -275,12 +278,10 @@ def render_table():
 
     print("\nTruth Table:")
 
-    # adding the propositional variables' column to the table
     variables_truth_values = generate_truth_values()
     for x in variables_truth_values:
         truth_table.add_column(x, variables_truth_values[x])
 
-    # adding the operation column to the table
     nested_propositions_truth_values = calculate_nested_propositions()
     for z in nested_propositions_truth_values:
         truth_table.add_column(z, nested_propositions_truth_values[z])
