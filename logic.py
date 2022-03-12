@@ -51,9 +51,8 @@ def user_input():
                 operators.append(char)
 
         # input error catcher -  unbalanced parenthesis
-        user_proposition_copy = user_proposition
-        open_paren = re.findall(r"\(", user_proposition_copy)
-        close_paren = re.findall(r"\)", user_proposition_copy)
+        open_paren = re.findall(r"\(", user_proposition)
+        close_paren = re.findall(r"\)", user_proposition)
 
         if len(open_paren) != len(close_paren):
             print("unbalanced parenthesis, re-enter proposition.")
@@ -63,7 +62,7 @@ def user_input():
         valid_operators = 0
         for con in operators:
             if con not in ["-", "∧", "∨", "⊕", "→", "⟷"]:
-                print("invalid connective: '{}\',".format(con), "re-enter proposition")
+                print("invalid operator: '{}\',".format(con), "re-enter proposition")
                 invalid_operator = True
                 continue
             else:
